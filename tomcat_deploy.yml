@@ -1,0 +1,66 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  gather_facts: no
+
+  tasks:
+
+    - name: Create Tomcat user
+      user:
+        name: tomcat
+
+    - name: Create Tomcat group
+      group:
+        name: tomcat
+
+    - name: Download tomcat
+      get_url: 
+        url: https://downloads.apache.org/tomcat/tomcat-9/v9.0.60/bin/apache-tomcat-9.0.60.tar.gz 
+        dest: /opt
+        mode: 0755
+
+
+    - name: Unarchive tomcat
+      unarchive:
+        src:  /opt/apache-tomcat-9.0.60.tar.gz
+        dest: /opt
+        copy: no
+
+    - name: Rename tomcat extracted folder
+      command: mv /opt/apache-tomcat-9.0.60  /opt/tomcat9
+
+    - name: Copy Tomcat service file to services folder
+      copy: 
+        src: /data/tomcat9
+        dest: /etc/init.d/
+        mode: 0755
+    
+    - name: Create tomcat log folder
+      file:
+        path: /var/log/tomcat9
+        state: directory
+
+    # tomcat executes setenv.sh automatically  and sets environment dependant variables
+    - name: Copy correct file that sets heaps size
+      copy:
+        src: "/data/setenv-{{ env }}"
+        dest: /opt/tomcat9/bin/setenv.sh
+
+
+    - name: Copy war file to Tomcat webapps folder
+      copy:
+        src: /data/sample.war
+        dest: /opt/tomcat9/webapps/
+
+    - name: Give Ownership of Tomcat directoy to tomcat 
+      file:
+        path: /opt/tomcat9
+        owner: tomcat
+        group: tomcat
+        mode: 755
+        recurse: yes
+        state: directory
+
+
+    - name: Start tomcat
+      command: /usr/sbin/service tomcat9 start

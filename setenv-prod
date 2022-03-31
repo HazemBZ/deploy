@@ -1,0 +1,5 @@
+CATALINA_OPTS="-Xmx256m"
+
+JAVA_HOME=/opt/java-se-8u41-ri
+PATH=$JAVA_HOME/bin:$PATH
+CATALINA_OUT=/var/log/tomcat9/catalina.out
